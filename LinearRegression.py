@@ -1,65 +1,55 @@
 import numpy as np
 from matplotlib import pyplot as plt
-plt.close('all')
 
+def hypothesis(X, theta):
+    return X.dot(theta)
 
-def Hypoth(X, theta):
-    return np.dot(X, theta)
+def cost_function(loss):
+    m = len(loss)
+    return  np.sum(loss ** 2) / (2 * m)
 
-def costFunction(X, y, theta):
-    m = len(y)
-    return (1./(2*m))*sum((Hypoth(X, theta) - y)**2)
+def gradient_decent(x, y, theta, alpha, m, numIterations):
+    J_hist = []
 
-def GradientDec(X, y, theta, alpha, iterations):
-    m = len(y)
-    J_hist = np.zeros([iterations, 1])
-    
-    x1 = np.zeros([len(y), 1])
-    for i in range(len(y)):
-        x1[i] = X[i, 1]
+    for i in range(0, numIterations):
+        loss = hypothesis(x, theta) - y
+        J_hist.append(cost_function(loss))
 
-    for i in range(iterations):
-        
-        t1 = float(theta[0]) - alpha*(1./m)*sum(Hypoth(X, theta) - y)
-        t2 = float(theta[1]) - alpha*(1./m)*sum((Hypoth(X, theta) - y) * x1)
-       
-        theta = np.array([[float(t1)], [float(t2)]])
-        J_hist[i] = costFunction(X, y, theta)
-        
+        # update theta
+        theta -= (alpha/m) * np.dot(x.T, loss)
+
     return theta, J_hist
 
 
-
-data = np.genfromtxt('ex1data1.txt')
-
-
+data = np.genfromtxt('data/data1.csv', delimiter=",")
 X, y = data[:, 0], data[:, 1]
-m = len(y)
 
-
-# ########### Plotting the data ###############
-# plt.figure()
-# plt.plot(data[:, 0], data[:, 1], '+r')
-# plt.xlim(4, 25)
-# plt.ylim(-5, 25)
-# plt.xlabel('Population of city (x10$^{4}$)')
-# plt.ylabel('Profit (\\$x10$^{4}$)')
-# plt.show()
-# #############################################
-
+m, n = data.shape
 XMat = np.ones([m, 2])
-yMat = np.ones([m, 1])
-for i in range(len(X)):
+yMat = y
+
+for i in range(m):
     XMat[i, 1] = X[i]
-    yMat[i] = y[i]
-    
-theta = np.array([[-1], [2]])#np.zeros([2, 1])
-iterations = 1500
-alpha = 0.01
 
-Theta, Jhist = GradientDec(XMat, yMat, theta, alpha, iterations)
 
-plt.plot(np.sort(XMat[:, 1], 0), np.sort(np.dot(XMat, Theta), 0), lw = 1)
+numIterations= 10000
+alpha = 0.0005
+theta = np.ones(n)
+
+
+print("Cost for init params:")
+print(cost_function(hypothesis(XMat, theta) - yMat))
+
+theta, Jhist = gradient_decent(XMat, yMat, theta, alpha, XMat.shape[0], numIterations)
+print(theta)
+
+
+plt.figure(1)
+plt.scatter(XMat[:,1], yMat, marker="+", c="r")
+plt.plot(
+    range(100), 
+    theta[1]*range(100) + theta[0]
+)
 
 plt.figure(2)
 plt.plot(Jhist)
